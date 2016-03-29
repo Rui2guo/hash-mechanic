@@ -13,7 +13,10 @@ import org.bouncycastle.crypto.Digest;
  * 
  * @author Ennis Golaszewski
  */
-public class BLAKE256 implements Digest {
+public class BLAKE256Digest implements Digest {
+
+	// TODO this should be 14.
+	public static final int NUM_ROUNDS = 14;
 
 	/**
 	 * Provides a name-string for the algorithm.
@@ -75,7 +78,7 @@ public class BLAKE256 implements Digest {
 	private byte[] buffer;
 	private boolean paddingBlock;
 
-	public BLAKE256() {
+	public BLAKE256Digest() {
 		reset();
 	}
 
@@ -258,7 +261,7 @@ public class BLAKE256 implements Digest {
 		// Iterate a series of 14 rounds, each round consisting of eight calls
 		// to the transformation function g of i,
 		// represented by G().
-		for (int r = 0; r < 14; r++) {
+		for (int r = 0; r < NUM_ROUNDS; r++) {
 			G(v, m, 0, 4, 8, 12, 0, r);
 			G(v, m, 1, 5, 9, 13, 1, r);
 			G(v, m, 2, 6, 10, 14, 2, r);

@@ -31,7 +31,7 @@ public class BLAKE256Test {
 		final byte[] expected = Hex.decodeHex(SINGLE_BLOCK_EXPECTED_HASH.toCharArray());
 		final int inLen = 1;
 
-		BLAKE256 blake = new BLAKE256();
+		BLAKE256Digest blake = new BLAKE256Digest();
 		byte[] in = new byte[inLen];
 		byte[] out = new byte[blake.getDigestSize()];
 		blake.update(in, 0, inLen);
@@ -44,7 +44,7 @@ public class BLAKE256Test {
 		final byte[] expected = Hex.decodeHex(DOUBLE_BLOCK_EXPECTED_HASH.toCharArray());
 		final int inLen = 72;
 
-		BLAKE256 blake = new BLAKE256();
+		BLAKE256Digest blake = new BLAKE256Digest();
 		byte[] in = new byte[inLen];
 		byte[] out = new byte[blake.getDigestSize()];
 		blake.update(in, 0, inLen);
@@ -81,7 +81,7 @@ public class BLAKE256Test {
 		final byte[] expected = Hex.decodeHex(expectedHash.toCharArray());
 		final int inLen = input.length();
 
-		BLAKE256 blake = new BLAKE256();
+		BLAKE256Digest blake = new BLAKE256Digest();
 		byte[] in = input.getBytes();
 		byte[] out = new byte[blake.getDigestSize()];
 		blake.update(in, 0, inLen);
