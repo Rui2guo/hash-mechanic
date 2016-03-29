@@ -14,8 +14,6 @@ import org.bouncycastle.crypto.Digest;
  * @author Ennis Golaszewski
  */
 public class BLAKE256Digest implements Digest {
-
-	// TODO this should be 14.
 	public static final int NUM_ROUNDS = 14;
 
 	/**
@@ -152,7 +150,6 @@ public class BLAKE256Digest implements Digest {
 		h = new int[8];
 		s = new int[4];
 		t = new int[2];
-		// TODO constant for this array size.
 		buffer = new byte[64];
 
 		// Update state with initialization vectors.
@@ -273,6 +270,13 @@ public class BLAKE256Digest implements Digest {
 		}
 
 		// Finalize the process by updating our chain value H.
+		updateChainValue(v);
+	}
+
+	/**
+	 * Updates the chain value as the last step of the compression function.
+	 */
+	protected void updateChainValue(int[] v) {
 		h[0] = h[0] ^ s[0] ^ v[0] ^ v[8];
 		h[1] = h[1] ^ s[1] ^ v[1] ^ v[9];
 		h[2] = h[2] ^ s[2] ^ v[2] ^ v[10];
@@ -286,7 +290,7 @@ public class BLAKE256Digest implements Digest {
 	/**
 	 * Applies the round function G to the state.
 	 */
-	private void G(int[] v, int[] m, int a, int b, int c, int d, int i, int r) {
+	protected void G(int[] v, int[] m, int a, int b, int c, int d, int i, int r) {
 		// We only have 10 permutations of {1, ..., 15}. We always want to index
 		// one of them.
 		r = r % 10;
