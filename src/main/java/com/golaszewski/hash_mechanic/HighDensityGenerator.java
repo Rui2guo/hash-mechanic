@@ -21,7 +21,7 @@ public class HighDensityGenerator {
 		final int blockBytes = digest.getDigestSize();
 		final int blockBits = blockBytes * Byte.SIZE;
 		int outputOffset = 0;
-		byte[] output = new byte[blockBytes + (blockBits * blockBits * blockBytes) + 1];
+		byte[] output = new byte[blockBytes + (blockBits * blockBits * blockBytes)];
 		byte[] hash = new byte[digest.getDigestSize()];
 		byte[] bits = new byte[blockBytes];
 		byte[] oneOff = new byte[blockBytes];
