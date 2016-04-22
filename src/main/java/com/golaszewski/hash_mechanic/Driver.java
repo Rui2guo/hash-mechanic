@@ -1,15 +1,13 @@
 package com.golaszewski.hash_mechanic;
 
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-
+import java.io.File;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.RIPEMD256Digest;
 import org.bouncycastle.util.Arrays;
 
 import com.golaszewski.hash_mechanic.hashes.BLAKE256Digest;
 import com.golaszewski.hash_mechanic.hashes.BRAKE256Digest;
+import com.google.common.io.Files;
 
 public class Driver {
 
@@ -22,16 +20,14 @@ public class Driver {
 	public static void main(String[] args) {
 		doHighDensityTest(new BLAKE256Digest());
 		doHighDensityTest(new BRAKE256Digest());
-		doHighDensityTest(new RIPEMD256Digest());
 	}
 
-	private static void doHighDensityTest(Digest digest) {
+	public static void doHighDensityTest(Digest digest) {
 		try {
 			byte[] output;
-			DataOutputStream ostream = new DataOutputStream(new FileOutputStream(digest.getAlgorithmName() + ".dat"));
 			output = new HighDensityGenerator().generateBytes(digest);
-			ostream.write(output);
-			ostream.close();
+			// printResult(output, digest.getDigestSize());
+			Files.write(output, new File(digest.getAlgorithmName() + ".dat"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

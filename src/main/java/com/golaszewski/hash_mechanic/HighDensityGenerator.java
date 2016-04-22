@@ -1,5 +1,10 @@
 package com.golaszewski.hash_mechanic;
 
+import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.math3.util.ArithmeticUtils;
 import org.bouncycastle.crypto.Digest;
 
 /**
@@ -18,45 +23,59 @@ public class HighDensityGenerator {
 	 * @return an array of bytes.
 	 */
 	public byte[] generateBytes(Digest digest) {
-		final int blockBytes = digest.getDigestSize();
-		final int blockBits = blockBytes * Byte.SIZE;
+		final int inputBytes = digest.getDigestSize() * 4;
+		final int inputBits = inputBytes * Byte.SIZE;
+
 		int outputOffset = 0;
-		byte[] output = new byte[blockBytes + (blockBits * blockBits * blockBytes)];
+
+		byte[] output = new byte[digest.getDigestSize() + (inputBits * digest.getDigestSize())
+				+ (int) (ArithmeticUtils.binomialCoefficient(inputBits, 2) * digest.getDigestSize())];
 		byte[] hash = new byte[digest.getDigestSize()];
-		byte[] bits = new byte[blockBytes];
-		byte[] oneOff = new byte[blockBytes];
-		byte[] twoOff = new byte[blockBytes];
+		byte[] bits = new byte[inputBytes];
+		byte[] oneOff = new byte[inputBytes];
+		byte[] twoOff = new byte[inputBytes];
 
 		for (int i = 0; i < bits.length; i++) {
 			bits[i] = (byte) 0xFF;
 		}
 
+		System.out.println("Generating " + output.length + " bytes.");
+
 		digest.update(bits, 0, bits.length);
 		digest.doFinal(hash, 0);
 		digest.reset();
 		System.arraycopy(hash, 0, output, outputOffset, hash.length);
-		outputOffset += blockBytes;
+		outputOffset += digest.getDigestSize();
 
-		for (int i = 0; i < blockBits; i++) {
+		for (int i = 0; i < inputBits; i++) {
 			oneOff = toggleBit(bits, i);
 			digest.update(oneOff, 0, oneOff.length);
 			digest.doFinal(hash, 0);
 			digest.reset();
 			System.arraycopy(hash, 0, output, outputOffset, hash.length);
-			outputOffset += blockBytes;
+			outputOffset += digest.getDigestSize();
 		}
 
-		for (int i = 0; i < blockBits; i++) {
+		// We don't want to double up on hashes here.
+		Set<BigInteger> existingHashes = new HashSet<BigInteger>();
+
+		for (int i = 0; i < inputBits; i++) {
 			oneOff = toggleBit(bits, i);
-			for (int j = 0; j < blockBits; j++) {
+			for (int j = 0; j < inputBits; j++) {
 				if (i != j) {
 					twoOff = oneOff;
 					twoOff = toggleBit(twoOff, j);
 					digest.update(twoOff, 0, twoOff.length);
 					digest.doFinal(hash, 0);
 					digest.reset();
-					System.arraycopy(hash, 0, output, outputOffset, hash.length);
-					outputOffset += blockBytes;
+
+					// Write a hash only if we haven't already written it to the
+					// output.
+					if (!existingHashes.contains(new BigInteger(hash))) {
+						existingHashes.add(new BigInteger(hash));
+						System.arraycopy(hash, 0, output, outputOffset, hash.length);
+						outputOffset += digest.getDigestSize();
+					}
 				}
 			}
 		}
