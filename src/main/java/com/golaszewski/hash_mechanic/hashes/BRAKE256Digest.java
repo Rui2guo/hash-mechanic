@@ -14,8 +14,10 @@ import org.bouncycastle.crypto.Digest;
  * @author Ennis Golaszewski
  */
 public class BRAKE256Digest implements Digest {
-
-	// TODO this should be 14.
+	
+	/**
+	 * By default, we hash 14 rounds.
+	 */
 	public static final int NUM_ROUNDS = 14;
 
 	/**
@@ -78,8 +80,22 @@ public class BRAKE256Digest implements Digest {
 	private byte[] buffer;
 	private boolean paddingBlock;
 
+	// Number of rounds to hash.
+	private int nRounds = NUM_ROUNDS;
+
 	public BRAKE256Digest() {
 		reset();
+	}
+
+	/**
+	 * Creates a new digest running at a variable count of rounds.
+	 * 
+	 * @param nRounds
+	 *            - the number of rounds to run.
+	 */
+	public BRAKE256Digest(int nRounds) {
+		this();
+		this.nRounds = nRounds;
 	}
 
 	public int doFinal(byte[] out, int outOff) {
@@ -258,10 +274,11 @@ public class BRAKE256Digest implements Digest {
 			v[15] ^= t[1];
 		}
 
-		// Iterate a series of 14 rounds, each round consisting of eight calls
+		// Iterate a series of n (default 14) rounds, each round consisting of
+		// eight calls
 		// to the transformation function g of i,
 		// represented by G().
-		for (int r = 0; r < NUM_ROUNDS; r++) {
+		for (int r = 0; r < nRounds; r++) {
 			G(v, m, 0, 4, 8, 12, 0, r);
 			G(v, m, 1, 5, 9, 13, 1, r);
 			G(v, m, 2, 6, 10, 14, 2, r);

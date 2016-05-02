@@ -1,8 +1,4 @@
-package com.golaszewski.hash_mechanic;
-
-import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.Set;
+package com.golaszewski.hash_mechanic.generator;
 
 import org.apache.commons.math3.util.ArithmeticUtils;
 import org.bouncycastle.crypto.Digest;
@@ -12,17 +8,12 @@ import org.bouncycastle.crypto.Digest;
  * 
  * @author Ennis Golaszewski
  */
-public class HighDensityGenerator {
-	/**
-	 * Generates an array of bytes for the purpose of testing a hash function.
-	 * 
-	 * @param digest
-	 *            - the hash function to generate the bytes from.
-	 * @param blocks
-	 *            - the number of blocks to generate. See BLOCK_SIZE constant.
-	 * @return an array of bytes.
-	 */
+public class HighDensityGenerator extends Generator {
+
+	@Override
 	public byte[] generateBytes(Digest digest) {
+		// We can multiply the input bytes to increase our message space for the
+		// test.
 		final int inputBytes = digest.getDigestSize() * 4;
 		final int inputBits = inputBytes * Byte.SIZE;
 
@@ -56,8 +47,13 @@ public class HighDensityGenerator {
 			outputOffset += digest.getDigestSize();
 		}
 
-		// We don't want to double up on hashes here.
-		Set<BigInteger> existingHashes = new HashSet<BigInteger>();
+		boolean[][] hashed = new boolean[inputBits][inputBits];
+
+		for (int i = 0; i < inputBits; i++) {
+			for (int j = 0; j < inputBits; j++) {
+				hashed[i][j] = false;
+			}
+		}
 
 		for (int i = 0; i < inputBits; i++) {
 			oneOff = toggleBit(bits, i);
@@ -71,8 +67,9 @@ public class HighDensityGenerator {
 
 					// Write a hash only if we haven't already written it to the
 					// output.
-					if (!existingHashes.contains(new BigInteger(hash))) {
-						existingHashes.add(new BigInteger(hash));
+					if (!hashed[i][j]) {
+						hashed[i][j] = true;
+						hashed[j][i] = true;
 						System.arraycopy(hash, 0, output, outputOffset, hash.length);
 						outputOffset += digest.getDigestSize();
 					}
@@ -83,24 +80,8 @@ public class HighDensityGenerator {
 		return output;
 	}
 
-	/**
-	 * Toggles a bit in a byte array.
-	 * 
-	 * @param bytes
-	 *            - the array of bytes. This input is not modified.
-	 * @param position
-	 *            - the index of the bit to flip.
-	 * @return a new array reflecting the flipped bit.
-	 */
-	private byte[] toggleBit(byte[] bytes, int position) {
-		byte[] result = new byte[bytes.length];
-
-		for (int i = 0; i < bytes.length; i++) {
-			result[i] = bytes[i];
-		}
-
-		int byteIndex = position / Byte.SIZE;
-		result[byteIndex] ^= 1 << (Byte.SIZE - (position % Byte.SIZE) - 1);
-		return result;
+	@Override
+	public String getName() {
+		return "highdensity";
 	}
 }

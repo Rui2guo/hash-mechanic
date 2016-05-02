@@ -1,12 +1,16 @@
 package com.golaszewski.hash_mechanic;
 
 import java.io.File;
+
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.util.Arrays;
 
-import com.golaszewski.hash_mechanic.hashes.BLAKE256Digest;
-import com.golaszewski.hash_mechanic.hashes.BRAKE256Digest;
+import com.golaszewski.hash_mechanic.generator.Generator;
+import com.golaszewski.hash_mechanic.generator.HashChainGenerator;
+import com.golaszewski.hash_mechanic.generator.HighDensityGenerator;
+import com.golaszewski.hash_mechanic.generator.LowDensityGenerator;
+import com.golaszewski.hash_mechanic.hashes.MD5Wrapper;
 import com.google.common.io.Files;
 
 public class Driver {
@@ -18,19 +22,29 @@ public class Driver {
 	 *            - not used, there are no command line arguments at this time.
 	 */
 	public static void main(String[] args) {
-		doHighDensityTest(new BLAKE256Digest());
-		doHighDensityTest(new BRAKE256Digest());
+		for (double i = 0.5; i <= 4; i += 0.5) {
+			doTest(new LowDensityGenerator(), new MD5Wrapper(i), i);
+			doTest(new HighDensityGenerator(), new MD5Wrapper(i), i);
+			doTest(new HashChainGenerator(), new MD5Wrapper(i), i);
+		}
 	}
 
-	public static void doHighDensityTest(Digest digest) {
+	public static byte[] doTest(Generator generator, Digest digest, double nRounds) {
 		try {
 			byte[] output;
-			output = new HighDensityGenerator().generateBytes(digest);
+			output = generator.generateBytes(digest);
 			// printResult(output, digest.getDigestSize());
-			Files.write(output, new File(digest.getAlgorithmName() + ".dat"));
+			Files.write(output, generateFile(digest.getAlgorithmName(), generator.getName(), nRounds));
+			return output;
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException("Error in writing file!");
 		}
+	}
+
+	public static File generateFile(String algorithm, String testName, double nRounds) {
+		String path = algorithm + "." + testName + "." + nRounds + ".dat";
+		return new File(path);
 	}
 
 	/**
